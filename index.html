@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CiteCase Search</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: white;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+            border: 1px solid #e0e0e0;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .search-section {
+            margin-bottom: 30px;
+            display: flex;
+            gap: 12px;
+            align-items: stretch;
+        }
+
+        .search-input-wrapper {
+            flex: 4;
+        }
+
+        label {
+            display: block;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #333;
+        }
+
+        .search-btn-inline {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #333;
+            color: white;
+            white-space: nowrap;
+            flex: 1;
+        }
+
+        .search-btn-inline:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .sources-section {
+            margin-bottom: 30px;
+        }
+
+        .sources-toggle {
+            background: white;
+            color: #333;
+            border: 2px solid #333;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            width: 100%;
+            text-align: left;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .sources-toggle:hover {
+            background: #f8f9fa;
+        }
+
+        .sources-toggle::after {
+            content: '▼';
+            transition: transform 0.3s;
+        }
+
+        .sources-toggle.active::after {
+            transform: rotate(180deg);
+        }
+
+        .sources-content {
+            display: none;
+            overflow: hidden;
+        }
+
+        .sources-content.show {
+            display: block;
+        }
+
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 10px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .source-item:hover {
+            background: #e9ecef;
+        }
+
+        .source-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .source-item label {
+            margin: 0;
+            font-weight: 400;
+            cursor: pointer;
+            font-size: 13px;
+            flex: 1;
+        }
+
+        .custom-sources {
+            margin-top: 15px;
+        }
+
+        .custom-sources input {
+            margin-top: 8px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+        }
+
+        .search-btn {
+            background: #333;
+            color: white;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .select-all-btn, .clear-btn {
+            background: white;
+            color: #333;
+            border: 2px solid #333;
+            flex: 0.5;
+        }
+
+        .select-all-btn:hover, .clear-btn:hover {
+            background: #333;
+            color: white;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1565c0;
+        }
+
+        .error {
+            background: #ffebee;
+            border-left: 4px solid #f44336;
+            color: #c62828;
+        }
+
+                    @media (max-width: 600px) {
+            .container {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+
+            .search-section {
+                flex-direction: column;
+            }
+
+            .sources-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .select-all-btn, .clear-btn {
+                flex: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CiteCase Search</h1>
+        <p class="subtitle">Search across multiple Indian legal databases using Google</p>
+
+        <div class="search-section">
+            <div class="search-input-wrapper">
+                <input 
+                    type="text" 
+                    id="searchQuery" 
+                    placeholder="Enter Case Name Or Keywords"
+                    autocomplete="off"
+                >
+            </div>
+            <button class="search-btn-inline" onclick="performSearch()">Search Google</button>
+        </div>
+
+        <div class="sources-section">
+            <button class="sources-toggle" onclick="toggleSources()">
+                <span>Select Sources</span>
+            </button>
+            
+            <div class="sources-content" id="sourcesContent">
+                <div class="sources-grid" id="sourcesGrid">
+                    <!-- Sources will be populated by JavaScript -->
+                </div>
+
+                <div class="button-group">
+                    <button class="select-all-btn" onclick="selectAll()">Select All</button>
+                    <button class="clear-btn" onclick="clearAll()">Clear All</button>
+                </div>
+
+                <div class="custom-sources">
+                    <label for="customSources">Custom Sources (Optional)</label>
+                    <input 
+                        type="text" 
+                        id="customSources" 
+                        placeholder="Enter additional domains separated by commas (e.g., example.com, another.org)"
+                    >
+                </div>
+            </div>
+        </div>
+
+        <div id="infoBox" style="margin-top: 20px; display: none;"></div>
+    </div>
+
+    <script>
+        const defaultSources = [
+            'caseciter.com',
+            'indiankanoon.org',
+            'casemine.com',
+            'livelaw.in',
+            'verdictum.in',
+            'lawbeat.in',
+            'barandbench.com',
+            'sci.gov.in',
+            'lawlens.in'
+        ];
+
+        function initializeSources() {
+            const grid = document.getElementById('sourcesGrid');
+            grid.innerHTML = '';
+
+            defaultSources.forEach((source, index) => {
+                const div = document.createElement('div');
+                div.className = 'source-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `source-${index}`;
+                checkbox.value = source;
+                checkbox.checked = true;
+
+                const label = document.createElement('label');
+                label.htmlFor = `source-${index}`;
+                label.textContent = source;
+
+                div.appendChild(checkbox);
+                div.appendChild(label);
+                grid.appendChild(div);
+            });
+        }
+
+        function toggleSources() {
+            const content = document.getElementById('sourcesContent');
+            const toggle = document.querySelector('.sources-toggle');
+            content.classList.toggle('show');
+            toggle.classList.toggle('active');
+        }
+
+        function selectAll() {
+            document.querySelectorAll('#sourcesGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = true;
+            });
+        }
+
+        function clearAll() {
+            document.querySelectorAll('#sourcesGrid input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+            });
+        }
+
+        function showMessage(message, isError = false) {
+            const infoBox = document.getElementById('infoBox');
+            infoBox.textContent = message;
+            infoBox.className = isError ? 'info-box error' : 'info-box';
+            infoBox.style.display = 'block';
+
+            setTimeout(() => {
+                infoBox.style.display = 'none';
+            }, 5000);
+        }
+
+        function performSearch() {
+            const query = document.getElementById('searchQuery').value.trim();
+            
+            if (!query) {
+                showMessage('Please enter a search query.', true);
+                return;
+            }
+
+            const selectedSources = [];
+            document.querySelectorAll('#sourcesGrid input[type="checkbox"]:checked').forEach(cb => {
+                selectedSources.push(cb.value);
+            });
+
+            const customSourcesInput = document.getElementById('customSources').value.trim();
+            if (customSourcesInput) {
+                const customSources = customSourcesInput.split(',').map(s => s.trim()).filter(s => s);
+                selectedSources.push(...customSources);
+            }
+
+            if (selectedSources.length === 0) {
+                showMessage('Please select at least one source.', true);
+                return;
+            }
+
+            const siteQuery = selectedSources.map(source => `site:${source}`).join(' OR ');
+            const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(query + ' (' + siteQuery + ')')}&tbs=qdr:y,sbd:1`;
+
+            window.open(googleSearchUrl, '_blank');
+        }
+
+        document.getElementById('searchQuery').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        initializeSources();
+    </script>
+</body>
+</html>
